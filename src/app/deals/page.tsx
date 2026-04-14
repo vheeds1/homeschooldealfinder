@@ -4,7 +4,7 @@ import DealsClient from "./DealsClient";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "All Deals | HomeschoolDealsFinder",
+  title: "All Deals | HomeschoolDealFinder",
   description:
     "Browse the latest homeschool curriculum discounts, STEM kit sales, subscription box deals, and more.",
 };

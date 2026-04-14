@@ -107,8 +107,8 @@ function LoginForm() {
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {mode === "signin"
-              ? "Sign in to your HomeschoolDealsFinder account"
-              : "Join the HomeschoolDealsFinder community"}
+              ? "Sign in to your HomeschoolDealFinder account"
+              : "Join the HomeschoolDealFinder community"}
           </p>
         </div>
 

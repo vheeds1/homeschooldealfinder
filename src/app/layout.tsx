@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HomeschoolDealsFinder - Save Big on Homeschool Essentials",
+  title: "HomeschoolDealFinder - Save Big on Homeschool Essentials",
   description:
     "Discover the best deals on homeschool curriculum, STEM kits, books, software, and more. Curated by homeschool parents for homeschool families.",
 };

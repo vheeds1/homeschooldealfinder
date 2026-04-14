@@ -20,16 +20,16 @@ export async function generateMetadata({
       select: { name: true, description: true },
     });
 
-    if (!category) return { title: "Category Not Found | HomeschoolDealsFinder" };
+    if (!category) return { title: "Category Not Found | HomeschoolDealFinder" };
 
     return {
-      title: `${category.name} Deals | HomeschoolDealsFinder`,
+      title: `${category.name} Deals | HomeschoolDealFinder`,
       description:
         category.description ??
         `Browse the best ${category.name} deals for homeschool families.`,
     };
   } catch {
-    return { title: "Category | HomeschoolDealsFinder" };
+    return { title: "Category | HomeschoolDealFinder" };
   }
 }
 

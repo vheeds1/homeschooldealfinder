@@ -1,4 +1,4 @@
-# HomeschoolDealsFinder.com
+# HomeschoolDealFinder.com
 
 A deal aggregation and community platform for homeschool families. Discover curriculum discounts, STEM kit sales, subscription box deals, and more — all curated and verified.
 

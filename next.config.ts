@@ -35,8 +35,8 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/:path*",
-        has: [{ type: "host", value: "www.homeschooldealsfinder.com" }],
-        destination: "https://homeschooldealsfinder.com/:path*",
+        has: [{ type: "host", value: "www.homeschooldealfinder.com" }],
+        destination: "https://homeschooldealfinder.com/:path*",
         permanent: true,
       },
     ];

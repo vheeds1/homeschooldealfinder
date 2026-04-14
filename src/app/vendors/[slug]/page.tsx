@@ -20,16 +20,16 @@ export async function generateMetadata({
       select: { name: true, description: true },
     });
 
-    if (!vendor) return { title: "Vendor Not Found | HomeschoolDealsFinder" };
+    if (!vendor) return { title: "Vendor Not Found | HomeschoolDealFinder" };
 
     return {
-      title: `${vendor.name} Deals | HomeschoolDealsFinder`,
+      title: `${vendor.name} Deals | HomeschoolDealFinder`,
       description:
         vendor.description ??
         `Browse all active deals from ${vendor.name} for homeschool families.`,
     };
   } catch {
-    return { title: "Vendor | HomeschoolDealsFinder" };
+    return { title: "Vendor | HomeschoolDealFinder" };
   }
 }
 

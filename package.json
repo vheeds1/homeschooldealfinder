@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "echo 'export * from \"./client\";' > src/generated/prisma/index.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "import-deals": "npx ts-node --compiler-options '{\"module\":\"commonjs\"}' scripts/import-deals.ts"

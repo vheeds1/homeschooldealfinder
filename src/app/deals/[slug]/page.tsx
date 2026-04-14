@@ -38,10 +38,10 @@ export async function generateMetadata({
       },
     });
 
-    if (!deal) return { title: "Deal Not Found | HomeschoolDealsFinder" };
+    if (!deal) return { title: "Deal Not Found | HomeschoolDealFinder" };
 
     return {
-      title: `${deal.title} | HomeschoolDealsFinder`,
+      title: `${deal.title} | HomeschoolDealFinder`,
       description: deal.description.slice(0, 160),
       openGraph: {
         title: deal.title,
@@ -50,7 +50,7 @@ export async function generateMetadata({
       },
     };
   } catch {
-    return { title: "Deal | HomeschoolDealsFinder" };
+    return { title: "Deal | HomeschoolDealFinder" };
   }
 }
 

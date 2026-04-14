@@ -35,7 +35,7 @@ export default function Header() {
             />
           </svg>
           <span className="text-lg font-bold text-gray-900">
-            HomeschoolDeals<span className="text-[#2E5EA6]">Finder</span>
+            HomeschoolDeal<span className="text-[#2E5EA6]">Finder</span>
           </span>
         </Link>
 
