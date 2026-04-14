@@ -23,7 +23,7 @@ const companyLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-gray-50">
+    <footer className="border-t border-gray-200 bg-gray-50" role="contentinfo">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Newsletter section */}
         <div className="mb-10 rounded-xl bg-[#2E5EA6] p-6 sm:p-8">
