@@ -17,6 +17,7 @@ const categoryLinks = [
 const companyLinks = [
   { name: "About", href: "/about" },
   { name: "Contact", href: "/contact" },
+  { name: "Affiliate Disclosure", href: "/affiliate-disclosure" },
   { name: "Privacy Policy", href: "/privacy" },
   { name: "Terms of Service", href: "/terms" },
 ];
@@ -124,8 +125,24 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Affiliate disclaimer */}
+        <div className="mt-8 rounded-lg bg-gray-100 px-4 py-3">
+          <p className="text-center text-xs text-gray-500">
+            <strong>Affiliate Disclosure:</strong> HomeschoolDealFinder may earn
+            a commission when you purchase through links on our site, at no extra
+            cost to you. This helps us keep the site running and continue finding
+            great deals for homeschool families.{" "}
+            <Link
+              href="/affiliate-disclosure"
+              className="underline hover:text-[#2E5EA6]"
+            >
+              Learn more
+            </Link>
+          </p>
+        </div>
+
         {/* Bottom bar */}
-        <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-8 sm:flex-row">
+        <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-6 sm:flex-row">
           <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} HomeschoolDealFinder. All rights
             reserved.
