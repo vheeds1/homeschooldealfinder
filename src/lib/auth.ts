@@ -1,5 +1,4 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -10,10 +9,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
     Credentials({
       name: "credentials",
       credentials: {
@@ -51,68 +46,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             name: user.displayName,
             image: user.avatarUrl,
           };
-        } catch {
+        } catch (err) {
+          console.error("Auth error:", err);
           return null;
         }
       },
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
-      if (account?.provider === "google" && user.email) {
-        try {
-          // Upsert the user record
-          const dbUser = await prisma.user.upsert({
-            where: { email: user.email },
-            update: {
-              avatarUrl: user.image ?? undefined,
-              displayName: user.name ?? undefined,
-            },
-            create: {
-              email: user.email,
-              displayName: user.name,
-              avatarUrl: user.image,
-            },
-          });
-
-          // Upsert the account link
-          await prisma.account.upsert({
-            where: {
-              provider_providerAccountId: {
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-              },
-            },
-            update: {
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-            },
-            create: {
-              userId: dbUser.id,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              type: account.type,
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-            },
-          });
-
-          // Set the user ID to match the database
-          user.id = dbUser.id;
-        } catch {
-          return false;
-        }
-      }
-      return true;
-    },
     async jwt({ token, user }) {
       if (user) {
-        // First sign-in: fetch role and premium status from DB
         try {
           const dbUser = await prisma.user.findUnique({
             where: { email: token.email! },
