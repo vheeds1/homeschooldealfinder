@@ -9,7 +9,13 @@ type AuthMode = "signin" | "signup";
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-[calc(100vh-4rem)] items-center justify-center"><p>Loading...</p></div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
+          <p>Loading...</p>
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );
@@ -22,6 +28,7 @@ function LoginForm() {
   const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -55,10 +62,17 @@ function LoginForm() {
     e.preventDefault();
     setError("");
     setMessage("");
+
+    // Validate passwords match
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Register the user
+      // Step 1: Register the user
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -69,25 +83,30 @@ function LoginForm() {
 
       if (!res.ok) {
         setError(data.error || "Registration failed.");
+        setLoading(false);
         return;
       }
 
-      // Auto sign-in after registration
+      // Step 2: Auto sign-in after successful registration
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       });
 
-      if (result?.error) {
-        setMessage("Account created! Please sign in.");
+      if (!result || result.error) {
+        // Account was created but auto-login failed — tell user to sign in manually
+        setMessage("Account created successfully! Please sign in below.");
         setMode("signin");
-      } else {
-        window.location.href = returnUrl;
+        setConfirmPassword("");
+        setLoading(false);
+        return;
       }
+
+      // Step 3: Redirect to account page
+      window.location.href = returnUrl;
     } catch {
       setError("Something went wrong. Please try again.");
-    } finally {
       setLoading(false);
     }
   }
@@ -106,91 +125,129 @@ function LoginForm() {
           </p>
         </div>
 
-        {/* Error / Message */}
-        {error && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-        {message && (
-          <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-            {message}
-          </div>
-        )}
-
-        {/* Form */}
-        <form
-          onSubmit={mode === "signin" ? handleSignIn : handleSignUp}
-          className="space-y-4"
-        >
-          <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-foreground">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              minLength={6}
-              className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading
-              ? "Loading..."
-              : mode === "signin"
-                ? "Sign In"
-                : "Create Account"}
-          </Button>
-        </form>
-
-        {/* Toggle sign in / sign up */}
-        <p className="mt-6 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? (
-            <>
-              Don&apos;t have an account?{" "}
-              <button
-                onClick={() => {
-                  setMode("signup");
-                  setError("");
-                  setMessage("");
-                }}
-                className="font-medium text-primary hover:underline"
-              >
-                Create Account
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{" "}
-              <button
-                onClick={() => {
-                  setMode("signin");
-                  setError("");
-                  setMessage("");
-                }}
-                className="font-medium text-primary hover:underline"
-              >
-                Sign In
-              </button>
-            </>
+        <div className="mt-6">
+          {/* Error / Message */}
+          {error && (
+            <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+            </div>
           )}
-        </p>
+          {message && (
+            <div className="mb-4 rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+              {message}
+            </div>
+          )}
+
+          {/* Form */}
+          <form
+            onSubmit={mode === "signin" ? handleSignIn : handleSignUp}
+            className="space-y-4"
+          >
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1 block text-sm font-medium text-foreground"
+              >
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-1 block text-sm font-medium text-foreground"
+              >
+                Password
+              </label>
+              <input
+                id="password"
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={
+                  mode === "signup"
+                    ? "At least 6 characters"
+                    : "Your password"
+                }
+                minLength={6}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+              />
+            </div>
+
+            {/* Confirm password — only shown on signup */}
+            {mode === "signup" && (
+              <div>
+                <label
+                  htmlFor="confirmPassword"
+                  className="mb-1 block text-sm font-medium text-foreground"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Re-enter your password"
+                  minLength={6}
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+            )}
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading
+                ? "Loading..."
+                : mode === "signin"
+                  ? "Sign In"
+                  : "Create Account"}
+            </Button>
+          </form>
+
+          {/* Toggle sign in / sign up */}
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            {mode === "signin" ? (
+              <>
+                Don&apos;t have an account?{" "}
+                <button
+                  onClick={() => {
+                    setMode("signup");
+                    setError("");
+                    setMessage("");
+                  }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  Create Account
+                </button>
+              </>
+            ) : (
+              <>
+                Already have an account?{" "}
+                <button
+                  onClick={() => {
+                    setMode("signin");
+                    setError("");
+                    setMessage("");
+                    setConfirmPassword("");
+                  }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  Sign In
+                </button>
+              </>
+            )}
+          </p>
+        </div>
       </div>
     </div>
   );
