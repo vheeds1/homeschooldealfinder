@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum DealType {
+  PERCENT_OFF
+  DOLLAR_OFF
+  FREE_TRIAL
+  PROMO_CODE
+  MEMBERSHIP
+  FREEBIE
+}
+
+enum DealStatus {
+  ACTIVE
+  EXPIRED
+  UNVERIFIED
+  FEATURED
+}
+
+enum UserRole {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model Deal {
+  id             String     @id @default(cuid())
+  title          String
+  slug           String     @unique
+  description    String
+  dealType       DealType
+  originalPrice  Float?
+  discountAmount Float?
+  promoCode      String?
+  dealUrl        String
+  affiliateUrl   String?
+  imageUrl       String?
+  vendorId       String
+  vendor         Vendor     @relation(fields: [vendorId], references: [id])
+  categoryId     String
+  category       Category   @relation(fields: [categoryId], references: [id])
+  submittedBy    String?
+  submitter      User?      @relation("SubmittedDeals", fields: [submittedBy], references: [id])
+  status         DealStatus @default(UNVERIFIED)
+  expiresAt      DateTime?
+  verifiedAt     DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  upvoteCount    Int        @default(0)
+  viewCount      Int        @default(0)
+  upvotes        Upvote[]
+
+  @@index([categoryId])
+  @@index([vendorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Vendor {
+  id                 String   @id @default(cuid())
+  name               String
+  slug               String   @unique
+  website            String?
+  logoUrl            String?
+  description        String?
+  affiliateNetwork   String?
+  affiliateSignupUrl String?
+  commissionRate     String?
+  isPartner          Boolean  @default(false)
+  createdAt          DateTime @default(now())
+  deals              Deal[]
+  dealAlerts         DealAlert[]
+}
+
+model Category {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  iconName     String?
+  displayOrder Int      @default(0)
+  dealCount    Int      @default(0)
+  deals        Deal[]
+  dealAlerts   DealAlert[]
+}
+
+model User {
+  id             String      @id
+  email          String      @unique
+  username       String?     @unique
+  displayName    String?
+  avatarUrl      String?
+  role           UserRole    @default(USER)
+  isPremium      Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  submittedDeals Deal[]      @relation("SubmittedDeals")
+  upvotes        Upvote[]
+  dealAlerts     DealAlert[]
+}
+
+model Upvote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  dealId    String
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, dealId])
+}
+
+model DealAlert {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id])
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  vendorId     String?
+  vendor       Vendor?   @relation(fields: [vendorId], references: [id])
+  keyword      String?
+  emailEnabled Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  isActive     Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+  preferences  Json     @default("{}")
+}
