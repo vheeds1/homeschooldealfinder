@@ -1,57 +1,48 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { cn } from "@/lib/utils";
+import { Suspense, useState } from "react";
+import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 type AuthMode = "signin" | "signup";
-type AuthMethod = "password" | "magic_link";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const supabase = useMemo(() => createClient(), []);
+  return (
+    <Suspense fallback={<div className="flex min-h-[calc(100vh-4rem)] items-center justify-center"><p>Loading...</p></div>}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl") || "/account";
 
   const [mode, setMode] = useState<AuthMode>("signin");
-  const [method, setMethod] = useState<AuthMethod>("password");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
 
-  async function handleEmailPassword(e: React.FormEvent) {
+  async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setMessage("");
     setLoading(true);
 
     try {
-      if (mode === "signup") {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
-          },
-        });
-        if (error) {
-          setError(error.message);
-        } else {
-          setMessage("Check your email for a confirmation link.");
-        }
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("Invalid email or password.");
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-        if (error) {
-          setError(error.message);
-        } else {
-          router.push("/account");
-          router.refresh();
-        }
+        window.location.href = returnUrl;
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -60,23 +51,39 @@ export default function LoginPage() {
     }
   }
 
-  async function handleMagicLink(e: React.FormEvent) {
+  async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
     setError("");
     setMessage("");
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+      // Register the user
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      if (error) {
-        setError(error.message);
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Registration failed.");
+        return;
+      }
+
+      // Auto sign-in after registration
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setMessage("Account created! Please sign in.");
+        setMode("signin");
       } else {
-        setMessage("Check your email for a magic link.");
+        window.location.href = returnUrl;
       }
     } catch {
       setError("Something went wrong. Please try again.");
@@ -88,22 +95,7 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setError("");
     setLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (error) {
-        setError(error.message);
-      }
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    await signIn("google", { callbackUrl: returnUrl });
   }
 
   return (
@@ -161,32 +153,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Method toggle */}
-        <div className="mb-4 flex rounded-lg border border-border p-1">
-          <button
-            onClick={() => setMethod("password")}
-            className={cn(
-              "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              method === "password"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Password
-          </button>
-          <button
-            onClick={() => setMethod("magic_link")}
-            className={cn(
-              "flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-              method === "magic_link"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Magic Link
-          </button>
-        </div>
-
         {/* Error / Message */}
         {error && (
           <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -199,64 +165,46 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Forms */}
-        {method === "password" ? (
-          <form onSubmit={handleEmailPassword} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
-                minLength={6}
-                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading
-                ? "Loading..."
-                : mode === "signin"
-                  ? "Sign In"
-                  : "Create Account"}
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={handleMagicLink} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium text-foreground">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Sending..." : "Send Magic Link"}
-            </Button>
-          </form>
-        )}
+        {/* Form */}
+        <form
+          onSubmit={mode === "signin" ? handleSignIn : handleSignUp}
+          className="space-y-4"
+        >
+          <div>
+            <label className="mb-1 block text-sm font-medium text-foreground">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-foreground">
+              Password
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
+              minLength={6}
+              className="w-full rounded-md border border-border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/50"
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading
+              ? "Loading..."
+              : mode === "signin"
+                ? "Sign In"
+                : "Create Account"}
+          </Button>
+        </form>
 
         {/* Toggle sign in / sign up */}
         <p className="mt-6 text-center text-sm text-muted-foreground">

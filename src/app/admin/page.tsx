@@ -1,22 +1,19 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AdminDealQueue from "./AdminDealQueue";
 
 export default async function AdminPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
 
-  if (!user) {
+  if (!session?.user?.id) {
     redirect("/login");
   }
 
   let dbUser;
   try {
     dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: session.user.id },
       select: { role: true },
     });
   } catch {

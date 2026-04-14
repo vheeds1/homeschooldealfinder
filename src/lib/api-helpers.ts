@@ -1,5 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import type { UserRole } from "@/generated/prisma";
 
 // ── Authenticated user helper ──────────────────────────────────────────────
@@ -11,23 +10,18 @@ export interface AuthUser {
 }
 
 /**
- * Resolves the authenticated Supabase user and fetches their DB record.
+ * Resolves the authenticated user from the NextAuth session.
  * Returns `null` when no valid session exists.
  */
 export async function getAuthUser(): Promise<AuthUser | null> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const session = await auth();
+  if (!session?.user?.id) return null;
 
-  if (!user) return null;
-
-  const dbUser = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { id: true, email: true, role: true },
-  });
-
-  return dbUser ?? null;
+  return {
+    id: session.user.id,
+    email: session.user.email,
+    role: session.user.role as UserRole,
+  };
 }
 
 /**
