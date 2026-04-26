@@ -109,10 +109,10 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="flex min-h-full flex-col bg-gray-50 font-sans text-gray-900">
+      <body style={{ display: "flex", minHeight: "100%", flexDirection: "column" }}>
         <Providers>
           <Header />
-          <main className="flex-1" id="main-content">{children}</main>
+          <main style={{ flex: 1 }} id="main-content">{children}</main>
           <Footer />
         </Providers>
       </body>

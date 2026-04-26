@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
-interface NewsletterFormProps {
-  className?: string;
-}
-
-export default function NewsletterForm({ className }: NewsletterFormProps) {
+export default function NewsletterForm() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,7 +15,7 @@ export default function NewsletterForm({ className }: NewsletterFormProps) {
 
     setStatus("loading");
     try {
-      const res = await fetch("/api/newsletter", {
+      const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
@@ -26,7 +23,7 @@ export default function NewsletterForm({ className }: NewsletterFormProps) {
 
       if (res.ok) {
         setStatus("success");
-        setMessage("You're subscribed! Check your inbox for a welcome email.");
+        setMessage("You're subscribed! Check your inbox.");
         setEmail("");
       } else {
         const data = await res.json();
@@ -40,34 +37,35 @@ export default function NewsletterForm({ className }: NewsletterFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className={cn("flex flex-col gap-3", className)}>
-      <div className="flex flex-col gap-2 sm:flex-row">
+    <>
+      <form onSubmit={handleSubmit} className="hsdf-newsletter-input">
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email address"
+          placeholder="your@email.com"
           required
-          className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-[#2E5EA6] focus:outline-none focus:ring-2 focus:ring-[#2E5EA6]/20"
+          aria-label="Email address"
         />
-        <button
-          type="submit"
-          disabled={status === "loading"}
-          className="rounded-lg bg-[#2E5EA6] px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1E4A8A] disabled:opacity-50"
-        >
-          {status === "loading" ? "Subscribing..." : "Subscribe"}
+        <button type="submit" disabled={status === "loading"}>
+          {status === "loading"
+            ? "..."
+            : status === "success"
+              ? "✓ Subscribed"
+              : "Get the list"}
         </button>
-      </div>
-      {message && (
+      </form>
+      {message && status === "error" && (
         <p
-          className={cn(
-            "text-sm",
-            status === "success" ? "text-[#1A7A5E]" : "text-red-600"
-          )}
+          style={{
+            fontSize: 12,
+            color: "#fca5a5",
+            margin: 0,
+          }}
         >
           {message}
         </p>
       )}
-    </form>
+    </>
   );
 }
