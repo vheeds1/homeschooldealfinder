@@ -1,30 +1,24 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+import NextAuth from "next-auth";
+import { authConfig } from "@/lib/auth.config";
 
-export async function middleware(request: NextRequest) {
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
-    salt:
-      process.env.NODE_ENV === "production"
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token",
-  });
+const { auth } = NextAuth(authConfig);
 
+export default auth((req) => {
   const protectedPaths = ["/account", "/submit", "/admin"];
   const isProtected = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
+    req.nextUrl.pathname.startsWith(path)
   );
 
-  if (isProtected && !token) {
-    const url = request.nextUrl.clone();
+  if (isProtected && !req.auth) {
+    const url = req.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("returnUrl", request.nextUrl.pathname);
+    url.searchParams.set("returnUrl", req.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
