@@ -959,3 +959,241 @@ a { color: inherit; }
     color: var(--ink);
   }
 }
+
+/* ── ADMIN ──────────────────────────────────────────────────────────────── */
+
+.adm-statgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.adm-stat {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+.adm-stat .lbl {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.adm-stat .num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.adm-stat .sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.adm-stat.accent .num { color: var(--primary); }
+.adm-stat.warn .num { color: var(--warn); }
+.adm-stat.success .num { color: var(--accent); }
+
+.adm-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.adm-toolbar input,
+.adm-toolbar select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+}
+.adm-toolbar input:focus,
+.adm-toolbar select:focus { border-color: var(--primary); }
+.adm-toolbar input { min-width: 220px; flex: 1; max-width: 360px; }
+.adm-toolbar .right { margin-left: auto; display: flex; gap: 8px; }
+
+.adm-btn {
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.adm-btn:hover { background: var(--primary-deep); }
+.adm-btn.ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+.adm-btn.ghost:hover { border-color: var(--primary); color: var(--primary); }
+.adm-btn.danger {
+  background: transparent;
+  color: var(--warn);
+  border: 1px solid var(--line);
+}
+.adm-btn.danger:hover { background: rgba(255, 138, 91, 0.1); border-color: var(--warn); }
+.adm-btn.success { background: var(--accent-deep); }
+.adm-btn.success:hover { background: var(--accent); color: #062014; }
+
+.adm-table {
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  border-collapse: collapse;
+  overflow: hidden;
+  font-size: 13px;
+}
+.adm-table thead th {
+  background: var(--paper-2);
+  color: var(--ink-3);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--line);
+}
+.adm-table tbody tr { border-bottom: 1px solid var(--line-soft); }
+.adm-table tbody tr:last-child { border-bottom: none; }
+.adm-table tbody tr:hover { background: var(--paper-2); }
+.adm-table td {
+  padding: 14px 16px;
+  color: var(--ink-2);
+  vertical-align: middle;
+}
+.adm-table td.title {
+  color: var(--ink);
+  font-weight: 600;
+  max-width: 360px;
+}
+.adm-table td.actions {
+  white-space: nowrap;
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.adm-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.adm-badge.active { background: var(--accent-soft); color: var(--accent); }
+.adm-badge.featured { background: rgba(91, 155, 255, 0.18); color: var(--primary); }
+.adm-badge.unverified { background: rgba(234, 179, 8, 0.16); color: #fbbf24; }
+.adm-badge.expired { background: rgba(100, 116, 139, 0.2); color: var(--ink-3); }
+.adm-badge.partner { background: rgba(91, 155, 255, 0.18); color: var(--primary); }
+
+.adm-form {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  display: grid;
+  gap: 20px;
+}
+.adm-form-row { display: grid; gap: 6px; }
+.adm-form-row.two { grid-template-columns: 1fr 1fr; gap: 16px; }
+.adm-form label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+}
+.adm-form .hint { font-size: 12px; color: var(--ink-4); }
+.adm-form input,
+.adm-form textarea,
+.adm-form select {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.adm-form input:focus,
+.adm-form textarea:focus,
+.adm-form select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(91, 155, 255, 0.15);
+}
+.adm-form textarea { min-height: 100px; resize: vertical; }
+.adm-form .actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-soft);
+}
+.adm-form .err {
+  background: rgba(255, 138, 91, 0.1);
+  border: 1px solid rgba(255, 138, 91, 0.4);
+  color: var(--warn);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.adm-form .ok {
+  background: var(--accent-soft);
+  border: 1px solid rgba(77, 212, 168, 0.4);
+  color: var(--accent);
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.adm-empty {
+  text-align: center;
+  padding: 60px 20px;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper);
+  color: var(--ink-3);
+}
+.adm-empty h3 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+@media (max-width: 800px) {
+  .adm-form-row.two { grid-template-columns: 1fr; }
+  .adm-table { font-size: 12px; }
+  .adm-table td, .adm-table th { padding: 10px 12px; }
+}
