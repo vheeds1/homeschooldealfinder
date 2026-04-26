@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import BrandMark from "./BrandMark";
 import Icon from "./Icon";
 
@@ -16,9 +16,11 @@ const navLinks = [
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const pathname = usePathname();
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const onSearch = () => {
     if (query.trim()) {
@@ -30,6 +32,9 @@ export default function Header() {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
+
+  const isAdmin = session?.user?.role === "ADMIN";
+  const isAuthed = status === "authenticated";
 
   return (
     <>
@@ -58,6 +63,15 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className={isActive("/admin") ? "active" : ""}
+                style={{ color: "var(--accent)" }}
+              >
+                Admin
+              </Link>
+            )}
           </nav>
 
           <div className="hsdf-header-search">
@@ -71,55 +85,133 @@ export default function Header() {
             />
           </div>
 
-          <Link
-            href="/login"
-            className="hsdf-signin"
-            aria-label="Sign in"
-          >
-            Sign In
-          </Link>
-
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="hsdf-icon-btn lg:hidden"
-            style={{ display: "none" }}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={mobileMenuOpen}
-          >
-            <Icon name="menu" size={18} />
-          </button>
-        </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div
-            style={{
-              borderTop: "1px solid var(--line)",
-              padding: "12px 20px",
-              background: "var(--paper)",
-            }}
-          >
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
+          {isAuthed ? (
+            <div style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="hsdf-signin"
                 style={{
-                  display: "block",
-                  padding: "10px 0",
-                  color: "var(--ink-2)",
-                  textDecoration: "none",
-                  fontWeight: 500,
+                  background: isAdmin ? "var(--accent)" : "var(--primary)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  cursor: "pointer",
                 }}
+                aria-label="User menu"
+                aria-expanded={userMenuOpen}
               >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        )}
+                {isAdmin ? "Admin" : "Account"}
+                <span style={{ fontSize: 10, opacity: 0.8 }}>▾</span>
+              </button>
+              {userMenuOpen && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "calc(100% + 8px)",
+                    right: 0,
+                    background: "var(--paper)",
+                    border: "1px solid var(--line)",
+                    borderRadius: 10,
+                    padding: 6,
+                    minWidth: 200,
+                    boxShadow: "var(--shadow-lg)",
+                    zIndex: 60,
+                  }}
+                >
+                  <div
+                    style={{
+                      padding: "10px 12px",
+                      borderBottom: "1px solid var(--line-soft)",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "var(--ink-3)",
+                      }}
+                    >
+                      Signed in as
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "var(--ink)",
+                        fontWeight: 600,
+                        wordBreak: "break-all",
+                      }}
+                    >
+                      {session?.user?.email}
+                    </div>
+                    {isAdmin && (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "var(--accent)",
+                          marginTop: 4,
+                          fontWeight: 700,
+                          letterSpacing: "0.05em",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Admin
+                      </div>
+                    )}
+                  </div>
+                  <Link
+                    href="/account"
+                    onClick={() => setUserMenuOpen(false)}
+                    style={menuItemStyle}
+                  >
+                    My Account
+                  </Link>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      onClick={() => setUserMenuOpen(false)}
+                      style={menuItemStyle}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    style={{
+                      ...menuItemStyle,
+                      width: "100%",
+                      textAlign: "left",
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      borderTop: "1px solid var(--line-soft)",
+                      marginTop: 4,
+                      paddingTop: 10,
+                    }}
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link href="/login" className="hsdf-signin" aria-label="Sign in">
+              Sign In
+            </Link>
+          )}
+        </div>
       </header>
     </>
   );
 }
+
+const menuItemStyle: React.CSSProperties = {
+  display: "block",
+  padding: "8px 12px",
+  fontSize: 14,
+  color: "var(--ink-2)",
+  textDecoration: "none",
+  borderRadius: 6,
+  fontWeight: 500,
+};
